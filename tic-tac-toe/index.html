@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tic Tac Toe 🎮</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Fira Code',monospace;
+    background:radial-gradient(circle at 50% 30%,rgba(88,166,255,.12),transparent 60%),#0d1117;
+    color:#e6edf3;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:20px;
+  }
+  h1{font-size:2.2rem;margin-bottom:6px;background:linear-gradient(90deg,#58a6ff,#f778ba);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .status{font-size:1.1rem;margin:14px 0;color:#8b949e;min-height:28px}
+  .board{
+    display:grid;grid-template-columns:repeat(3,100px);
+    gap:10px;margin:16px 0;
+  }
+  .cell{
+    width:100px;height:100px;
+    background:#161b22;border:2px solid #30363d;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:3rem;font-weight:700;cursor:pointer;
+    transition:all .2s;
+  }
+  .cell:hover:not(.filled){background:#1f252e;border-color:#58a6ff;transform:scale(1.03)}
+  .cell.x{color:#58a6ff}
+  .cell.o{color:#f778ba}
+  .cell.win{background:#2ea04330;border-color:#2ea043;animation:pulse 1s infinite}
+  @keyframes pulse{50%{transform:scale(1.05)}}
+  .score{display:flex;gap:20px;margin:14px 0;font-size:.95rem;color:#8b949e}
+  .score span b{color:#e6edf3}
+  button{
+    background:linear-gradient(135deg,#238636,#2ea043);color:#fff;border:none;
+    padding:10px 22px;border-radius:8px;font-size:1rem;cursor:pointer;
+    margin-top:8px;font-family:inherit;transition:transform .15s;
+  }
+  button:hover{transform:translateY(-2px)}
+  a.back{color:#58a6ff;text-decoration:none;margin-top:22px;font-size:.9rem}
+  a.back:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+  <h1>❌ Tic Tac Toe ⭕</h1>
+  <div class="score">
+    <span>You: <b id="sx">0</b></span>
+    <span>AI: <b id="so">0</b></span>
+    <span>Draws: <b id="sd">0</b></span>
+  </div>
+  <div class="status" id="status">Your turn (X)</div>
+  <div class="board" id="board"></div>
+  <button onclick="reset()">🔄 New Round</button>
+  <a class="back" href="../">← Back to Arcade</a>
+
+<script>
+let board=Array(9).fill(''),over=false,score={x:0,o:0,d:0};
+const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+const boardEl=document.getElementById('board'),statusEl=document.getElementById('status');
+
+function render(winLine=[]){
+  boardEl.innerHTML='';
+  board.forEach((v,i)=>{
+    const c=document.createElement('div');
+    c.className='cell '+(v?'filled '+v.toLowerCase():'')+(winLine.includes(i)?' win':'');
+    c.textContent=v;
+    c.onclick=()=>play(i);
+    boardEl.appendChild(c);
+  });
+}
+function checkWin(b){
+  for(const line of lines){
+    const [a,b1,c]=line;
+    if(b[a]&&b[a]===b[b1]&&b[a]===b[c])return{winner:b[a],line};
+  }
+  return b.every(v=>v)?{winner:'T',line:[]}:null;
+}
+function play(i){
+  if(over||board[i])return;
+  board[i]='X';
+  if(!finish())setTimeout(aiMove,380);
+}
+function aiMove(){
+  let move=bestMoveFor('O')??bestMoveFor('X')??(board[4]===''?4:null);
+  if(move===null){
+    const open=board.map((v,i)=>v===''?i:null).filter(v=>v!==null);
+    const corners=[0,2,6,8].filter(i=>open.includes(i));
+    move=corners.length?corners[Math.floor(Math.random()*corners.length)]
+         :open[Math.floor(Math.random()*open.length)];
+  }
+  board[move]='O';
+  finish();
+}
+function bestMoveFor(p){
+  for(let i=0;i<9;i++){
+    if(board[i])continue;
+    const t=[...board];t[i]=p;
+    if(checkWin(t)?.winner===p)return i;
+  }
+  return null;
+}
+function finish(){
+  const r=checkWin(board);
+  if(r){
+    over=true;
+    render(r.line);
+    if(r.winner==='X'){score.x++;statusEl.textContent='🎉 You win!';statusEl.style.color='#2ea043'}
+    else if(r.winner==='O'){score.o++;statusEl.textContent='🤖 AI wins!';statusEl.style.color='#f778ba'}
+    else{score.d++;statusEl.textContent='🤝 Draw!';statusEl.style.color='#ffa657'}
+    sx.textContent=score.x;so.textContent=score.o;sd.textContent=score.d;
+    return true;
+  }
+  render();
+  statusEl.style.color='#8b949e';
+  statusEl.textContent=board.filter(v=>v==='X').length>board.filter(v=>v==='O').length?"🤖 AI thinking...":"Your turn (X)";
+  return false;
+}
+function reset(){board=Array(9).fill('');over=false;statusEl.style.color='#8b949e';statusEl.textContent='Your turn (X)';render()}
+reset();
+</script>
+</body>
+</html>

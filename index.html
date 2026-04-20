@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shubham's Retro Arcade 🎮</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Fira Code','Courier New',monospace;
+    background:
+      radial-gradient(circle at 20% 20%,rgba(88,166,255,.15),transparent 40%),
+      radial-gradient(circle at 80% 80%,rgba(247,120,186,.15),transparent 40%),
+      #0d1117;
+    color:#e6edf3;min-height:100vh;padding:40px 20px;
+  }
+  .wrap{max-width:960px;margin:0 auto;text-align:center}
+  h1{
+    font-size:clamp(2rem,5vw,3.4rem);
+    background:linear-gradient(90deg,#58a6ff,#f778ba,#ffa657);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    margin-bottom:8px;letter-spacing:2px;
+  }
+  p.tag{color:#8b949e;margin-bottom:40px;font-size:1.05rem}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:22px;margin-top:20px;
+  }
+  a.card{
+    display:block;text-decoration:none;color:inherit;
+    background:linear-gradient(145deg,#161b22,#1c222b);
+    border:1px solid #30363d;border-radius:16px;padding:32px 22px;
+    transition:all .25s ease;position:relative;overflow:hidden;
+  }
+  a.card::before{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(120deg,transparent,rgba(88,166,255,.08),transparent);
+    transform:translateX(-100%);transition:transform .6s;
+  }
+  a.card:hover{
+    transform:translateY(-6px);border-color:#58a6ff;
+    box-shadow:0 12px 30px rgba(88,166,255,.25);
+  }
+  a.card:hover::before{transform:translateX(100%)}
+  .icon{font-size:3rem;margin-bottom:10px;display:block}
+  .title{font-size:1.25rem;font-weight:700;color:#58a6ff;margin-bottom:6px}
+  .desc{font-size:.9rem;color:#8b949e;line-height:1.4}
+  .footer{margin-top:50px;color:#6e7681;font-size:.85rem}
+  .footer a{color:#58a6ff;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🕹️ Shubham's Retro Arcade</h1>
+  <p class="tag">Take a break. Pick a game. Beat my high score.</p>
+
+  <div class="grid">
+    <a class="card" href="tic-tac-toe/">
+      <span class="icon">❌⭕</span>
+      <div class="title">Tic Tac Toe</div>
+      <div class="desc">Classic 3-in-a-row vs a smart AI</div>
+    </a>
+    <a class="card" href="snake/">
+      <span class="icon">🐍</span>
+      <div class="title">Snake</div>
+      <div class="desc">Eat, grow, don't crash. Arrow keys.</div>
+    </a>
+    <a class="card" href="2048/">
+      <span class="icon">🔢</span>
+      <div class="title">2048</div>
+      <div class="desc">Slide &amp; merge tiles to reach 2048</div>
+    </a>
+    <a class="card" href="memory/">
+      <span class="icon">🧠</span>
+      <div class="title">Memory Match</div>
+      <div class="desc">Flip cards, remember pairs</div>
+    </a>
+    <a class="card" href="typing/">
+      <span class="icon">⌨️</span>
+      <div class="title">Typing Speed</div>
+      <div class="desc">60 seconds — how fast can you type?</div>
+    </a>
+    <a class="card" href="https://github.com/Shubhamgupta171" target="_blank">
+      <span class="icon">👨‍💻</span>
+      <div class="title">Back to GitHub</div>
+      <div class="desc">Visit my profile &amp; projects</div>
+    </a>
+  </div>
+
+  <div class="footer">
+    Built with ❤️ by <a href="https://github.com/Shubhamgupta171">Shubham Gupta</a>
+  </div>
+</div>
+</body>
+</html>

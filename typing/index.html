@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Typing Speed ⌨️</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Fira Code',monospace;
+    background:radial-gradient(circle at 50% 30%,rgba(88,166,255,.12),transparent 60%),#0d1117;
+    color:#e6edf3;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:20px;
+  }
+  h1{font-size:2.2rem;margin-bottom:6px;background:linear-gradient(90deg,#58a6ff,#2ea043);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hud{display:flex;gap:14px;margin:14px 0}
+  .pill{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:10px 18px;text-align:center;min-width:95px}
+  .pill span{display:block;color:#8b949e;font-size:.72rem;letter-spacing:1px}
+  .pill b{font-size:1.3rem}
+  .pill.time b{color:#ffa657}
+  .pill.wpm b{color:#2ea043}
+  .pill.acc b{color:#58a6ff}
+  .text-box{
+    background:#161b22;border:2px solid #30363d;border-radius:14px;
+    padding:28px 24px;max-width:780px;width:100%;
+    font-size:1.3rem;line-height:1.8;letter-spacing:.5px;
+    margin:10px 0;min-height:140px;user-select:none;
+  }
+  .char{color:#6e7681;transition:color .05s}
+  .char.correct{color:#2ea043}
+  .char.wrong{color:#f85149;background:#f8514920;border-radius:3px}
+  .char.current{background:#58a6ff30;border-bottom:2px solid #58a6ff;animation:blink 1s infinite}
+  @keyframes blink{50%{background:transparent}}
+  input{
+    background:#161b22;border:2px solid #30363d;border-radius:10px;
+    padding:12px 18px;font-size:1rem;color:#e6edf3;width:100%;max-width:780px;
+    font-family:inherit;margin-top:6px;outline:none;
+  }
+  input:focus{border-color:#58a6ff;box-shadow:0 0 15px rgba(88,166,255,.25)}
+  input:disabled{opacity:.5}
+  .status{margin:14px 0;min-height:26px;color:#ffa657;font-size:1rem;text-align:center}
+  button{background:linear-gradient(135deg,#1f6feb,#58a6ff);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:1rem;cursor:pointer;font-family:inherit;margin-top:4px}
+  a.back{color:#58a6ff;text-decoration:none;margin-top:18px;font-size:.9rem}
+  a.back:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+  <h1>⌨️ Typing Speed Test</h1>
+  <div class="hud">
+    <div class="pill time"><span>TIME</span><b id="time">60s</b></div>
+    <div class="pill wpm"><span>WPM</span><b id="wpm">0</b></div>
+    <div class="pill acc"><span>ACCURACY</span><b id="acc">100%</b></div>
+    <div class="pill"><span>BEST WPM</span><b id="best">0</b></div>
+  </div>
+  <div class="text-box" id="text"></div>
+  <input id="input" type="text" placeholder="Start typing here..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+  <div class="status" id="status">You have 60 seconds. Go!</div>
+  <button onclick="reset()">🔄 New Test</button>
+  <a class="back" href="../">← Back to Arcade</a>
+
+<script>
+const PARAGRAPHS=[
+  "The quick brown fox jumps over the lazy dog and runs away before anyone can catch it. This classic sentence contains every letter of the English alphabet at least once.",
+  "Good code is like a good joke — it needs no explanation. Write programs for people first and for machines second. Clarity beats cleverness every single day of the week.",
+  "Distributed systems are hard because the network is not reliable, latency is not zero, and bandwidth is not infinite. Embrace failure and design for resilience from day one.",
+  "The best time to plant a tree was twenty years ago. The second best time is now. Small consistent actions compound into extraordinary results over a long enough timeline.",
+  "Clean architecture is about drawing hard lines between what changes often and what changes rarely. Business rules live in the core; frameworks live at the edges, replaceable.",
+];
+let text,chars,idx,startTime,timer,correct,typed,timeLeft;
+const textEl=document.getElementById('text'),inp=document.getElementById('input');
+const best=+localStorage.typingBest||0;
+document.getElementById('best').textContent=best;
+
+function reset(){
+  text=PARAGRAPHS[Math.floor(Math.random()*PARAGRAPHS.length)];
+  chars=text.split('').map(c=>({c,state:''}));
+  idx=0;correct=0;typed=0;timeLeft=60;startTime=null;
+  clearInterval(timer);
+  inp.value='';inp.disabled=false;inp.focus();
+  document.getElementById('time').textContent='60s';
+  document.getElementById('wpm').textContent='0';
+  document.getElementById('acc').textContent='100%';
+  document.getElementById('status').textContent='You have 60 seconds. Go!';
+  renderText();
+}
+function renderText(){
+  textEl.innerHTML=chars.map((ch,i)=>{
+    const cls=ch.state+(i===idx?' current':'');
+    return `<span class="char ${cls}">${ch.c==' '?'&nbsp;':ch.c}</span>`;
+  }).join('');
+}
+inp.addEventListener('input',e=>{
+  if(!startTime){
+    startTime=Date.now();
+    timer=setInterval(tick,200);
+  }
+  const val=inp.value;
+  // reset all after idx
+  for(let i=0;i<chars.length;i++)if(i>=val.length)chars[i].state='';
+  typed=val.length;correct=0;
+  for(let i=0;i<val.length;i++){
+    if(val[i]===chars[i].c){chars[i].state='correct';correct++}
+    else chars[i].state='wrong';
+  }
+  idx=val.length;
+  renderText();
+  updateStats();
+  if(val.length===text.length)finish();
+});
+function tick(){
+  timeLeft=Math.max(0,60-Math.floor((Date.now()-startTime)/1000));
+  document.getElementById('time').textContent=timeLeft+'s';
+  updateStats();
+  if(timeLeft===0)finish();
+}
+function updateStats(){
+  if(!startTime)return;
+  const mins=(Date.now()-startTime)/60000;
+  const wpm=Math.round((correct/5)/Math.max(mins,.01));
+  const acc=typed?Math.round(correct/typed*100):100;
+  document.getElementById('wpm').textContent=wpm;
+  document.getElementById('acc').textContent=acc+'%';
+}
+function finish(){
+  clearInterval(timer);inp.disabled=true;
+  const wpm=+document.getElementById('wpm').textContent;
+  let msg=`🏁 Finished! WPM: ${wpm} · Accuracy: ${document.getElementById('acc').textContent}`;
+  if(wpm>best){localStorage.typingBest=wpm;document.getElementById('best').textContent=wpm;msg+=' — NEW BEST! 🎉'}
+  document.getElementById('status').textContent=msg;
+}
+reset();
+</script>
+</body>
+</html>
